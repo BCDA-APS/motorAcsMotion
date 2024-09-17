@@ -1,0 +1,6 @@
+record(bo, "$(P)$(M):commut")
+{
+    field(DESC, "Commut Method")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))SPIIPLUS_COMMUT_METHOD")
+}

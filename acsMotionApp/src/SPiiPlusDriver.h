@@ -99,6 +99,7 @@
 
 // drvInfo strings for extra parameters that the XPS controller supports
 #define SPiiPlusHomingMethodString             "SPIIPLUS_HOMING_METHOD"
+#define SPiiPlusCommutMethodString             "SPIIPLUS_COMMUT_METHOD"
 #define SPiiPlusMaxVelocityString              "SPIIPLUS_MAX_VELOCITY"
 #define SPiiPlusMaxAccelerationString          "SPIIPLUS_MAX_ACCELERATION"
 #define SPiiPlusReadIntVarString               "SPIIPLUS_READ_INT_VAR"
@@ -159,6 +160,7 @@ public:
 	asynStatus move(double position, int relative, double min_velocity, double max_velocity, double acceleration);
 	asynStatus moveVelocity(double minVelocity, double maxVelocity, double acceleration);
 	asynStatus home(double minVelocity, double maxVelocity, double acceleration, int forwards);
+	asynStatus moveVelocity(double minVelocity, double maxVelocity, double acceleration);
 	asynStatus stop(double acceleration);
 	asynStatus poll(bool *moving);
 	asynStatus setPosition(double position);
@@ -238,6 +240,7 @@ public:
 	asynStatus writeGlobalRealVar(asynUser *pasynUser, epicsFloat64 value);
 	asynStatus startProgram(asynUser *pasynUser, epicsFloat64 value);
 	asynStatus stopProgram(asynUser *pasynUser, epicsFloat64 value);
+	asynStatus setCommut(asynUser *pasynUser, epicsFloat64 value);
 	
 protected:
 	SPiiPlusAxis **pAxes_;       /**< Array of pointers to axis objects */
@@ -246,6 +249,7 @@ protected:
 	
 	#define FIRST_SPIIPLUS_PARAM SPiiPlusHomingMethod_
 	int SPiiPlusHomingMethod_;
+	int SPiiPlusCommutMethod_;
 	int SPiiPlusMaxVelocity_;
 	int SPiiPlusMaxAcceleration_;
 	int SPiiPlusReadIntVar_;

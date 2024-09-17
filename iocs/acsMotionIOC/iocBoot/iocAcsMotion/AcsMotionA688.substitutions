@@ -1,0 +1,98 @@
+#
+# Note: the P macro, which is passed to all of the databases in this file, has the value $(PREFIX) and is set in the envVars file
+#
+# Note: This file has been configured for A-688 Series Rotary Air Bearing Stage
+file "$(TOP)/db/asyn_motor.db"
+{
+pattern
+{N,   M,       DTYP,         PORT,  ADDR,  DESC,          EGU, DIR,  VELO,  VBAS,  ACCL,  BDST,  BVEL,  BACC,  MRES,         PREC,  DHLM,  DLLM,  INIT}
+{1,  "m$(N)",  "asynMotor",  ACS1,  0,     "motor $(N)",  degree,  Pos,  1500,     0,    100,    0,	0,     0,    1,  6,      "",    "",  ""}
+}
+
+#file "$(TOP)/db/profileMoveController.template"
+#{
+#pattern
+#{R,     PORT, NAXES,  NPOINTS, NPULSES, TIMEOUT}
+#{pm1:,  ACS1,     1,     2000,    2000,     2.0}
+#}
+
+#file "$(TOP)/db/profileMoveAxis.template"
+#{
+#pattern
+#{R,     M, NPOINTS, NREADBACK, PORT, ADDR, TIMEOUT, PREC}
+#{pm1:,  1,    2000,      2000, ACS1,    0,     2.0,    4}
+#}
+
+file "$(TOP)/db/SPiiPlusAxisExtra.db"
+{
+pattern
+{M,   PORT, ADDR}
+{m1,  ACS1,    0}
+}
+
+file "$(TOP)/db/SPiiPlusHoming.db"
+{
+pattern
+{M,   PORT, ADDR, TIMEOUT,    VAL}
+{m1,  ACS1,    0,     2.0,    0}
+}
+
+file "$(TOP)/db/SPiiPlusCommut.db"
+{
+pattern
+{M,   PORT, ADDR, TIMEOUT,    VAL}
+{m1,  ACS1,    0,     2.0,    0}
+}
+
+# These records work, but the initial values are all zero.  Maybe HOPR/LOPR/DRVH/DRVL need to be set?
+#file "$(TOP)/db/SPiiPlusMaxParams.db"
+#{
+#pattern
+#{M,   PORT, ADDR,  MAX_VELO,  MAX_ACCL,   PREC}
+#{m1,  ACS1,    0,       5.0,      20.0,      4}
+#}
+
+#file "$(TOP)/db/SPiiPlusMaxParamsRbv.db"
+#{
+#pattern
+#{M,   PORT, ADDR, PREC}
+#{m1,  ACS1,    0,    4}
+#}
+
+### The feedback database is helpful for troubleshooting encoder problems
+file "$(TOP)/db/SPiiPlusFeedback.db"
+{
+pattern
+{M,   PORT, ADDR, PREC, SCAN}
+{m1,  ACS1,    0,    6,    2}
+}
+
+### The following databases are useful if programs are running on the ACS controller
+#file "$(TOP)/db/SPiiPlusIntVar.db"
+#{
+#pattern
+#{R,         DESC,     PORT,  TAG}
+#{c0:1001I,  "Int 1",    ACS1,  1001}
+#}
+
+#file "$(TOP)/db/SPiiPlusRealVar.db"
+#{
+#pattern
+#{R,         DESC,      PORT,  TAG,   PREC}
+#{c0:1002R,  "Real 1",    ACS1,  1002,     5}
+#}
+
+#file "$(TOP)/db/SPiiPlusProgram.db"
+#{
+#pattern
+#{R,    PORT,  BUFF,   NAME}
+#{c0:,  ACS1,   8,     home0}
+#}
+
+### This is only used for during development and will be removed in the near future
+#file "$(TOP)/db/SPiiPlusTest.db"
+#{
+#pattern
+#{R,     PORT}
+#{pm1:,  ACS1}
+#}

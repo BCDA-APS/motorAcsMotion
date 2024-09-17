@@ -6,5 +6,8 @@ iocshLoad("$(MOTOR_ACSMOTION)/iocsh/ACS_Motion_tcp.iocsh", "INSTANCE=ACS1,IP_ADD
 # Load motor records
 dbLoadTemplate("AcsMotion.substitutions","P=$(PREFIX)")
 
+# Load motor records for A-688 Series Rotary Air Bearing Stage (NUM_AXES=1)
+#dbLoadTemplate("AcsMotionA688.substitutions","P=$(PREFIX)")
+
 # Load an asyn record for debugging
 dbLoadRecords("$(ASYN)/db/asynRecord.db","P=$(PREFIX),R=asyn,PORT=ACS1_ETH,ADDR=0,OMAX=256,IMAX=256")

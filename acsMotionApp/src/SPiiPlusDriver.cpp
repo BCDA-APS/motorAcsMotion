@@ -56,6 +56,7 @@ SPiiPlusController::SPiiPlusController(const char* ACSPortName, const char* asyn
 	
 	// Create parameters
 	createParam(SPiiPlusHomingMethodString,               asynParamInt32, &SPiiPlusHomingMethod_);
+  createParam(SPiiPlusCommutMethodString,               asynParamInt32, &SPiiPlusCommutMethod_);
 	createParam(SPiiPlusMaxVelocityString,                asynParamFloat64, &SPiiPlusMaxVelocity_);
 	createParam(SPiiPlusMaxAccelerationString,            asynParamFloat64, &SPiiPlusMaxAcceleration_);
 	createParam(SPiiPlusReadIntVarString,                 asynParamInt32,   &SPiiPlusReadIntVar_);
@@ -121,7 +122,7 @@ SPiiPlusController::SPiiPlusController(const char* ACSPortName, const char* asyn
 	for (int index = 0; index < numAxes; index += 1)
 	{
 		new SPiiPlusAxis(this, index);
-		
+
 		// Parse the setup parameters
 		// Bit 0 is #DUMMY (dummy axis)
 		pAxes_[index]->dummy_ = motorFlags_[index] & SPIIPLUS_MFLAGS_DUMMY;
@@ -152,7 +153,8 @@ SPiiPlusController::SPiiPlusController(const char* ACSPortName, const char* asyn
 		
 		// axis resolution (used to convert motor record steps into controller EGU)
 		// TODO: how should nanomotion piezo ceramic motors (bit 7 of mflags) be handled?
-		if ((pAxes_[index]->brushl_ == 0) && (pAxes_[index]->linear_ == 0))
+		//if ((pAxes_[index]->brushl_ == 1) && (pAxes_[index]->linear_ == 0))
+    if (pAxes_[index]->linear_ == 0)
 		{
 			// Use the stepper factor as the resolution for stepper motors
 			pAxes_[index]->resolution_ = stepperFactor_[index];
@@ -328,6 +330,11 @@ asynStatus SPiiPlusController::writeInt32(asynUser *pasynUser, epicsInt32 value)
   {
     //
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s:%s: homingMethod = %i\n", driverName, functionName, value);
+  }
+
+  if (function == SPiiPlusCommutMethod_)
+  {
+    status = setCommut(pasynUser, value);
   }
   
   if (function == SPiiPlusTest_)
@@ -617,6 +624,22 @@ asynStatus SPiiPlusController::stopProgram(asynUser *pasynUser, epicsFloat64 val
 	return status;
 }
 
+asynStatus SPiiPlusController::setCommut(asynUser *pasynUser, epicsFloat64 value)
+{
+	asynStatus status;
+	std::stringstream cmd;
+	static const char *functionName = "setCommut";
+  SPiiPlusAxis *pAxis;
+  
+  pAxis = getAxis(pasynUser);
+
+  // COMMUT performs auto commutation
+	cmd << "COMMUT " << pAxis->axisNo_;
+	status = pComm_->writeReadAck(cmd);
+	
+	return status;
+}
+
 
 SPiiPlusAxis::SPiiPlusAxis(SPiiPlusController *pC, int axisNo)
 : asynMotorAxis(pC, axisNo),
@@ -827,7 +850,7 @@ asynStatus SPiiPlusAxis::move(double position, int relative, double minVelocity,
 		cmd << "PTP " << axisNo_ << ", " << (position * resolution_);
 		status = controller->pComm_->writeReadAck(cmd);
 	}
-	
+
 	return status;
 }
 
@@ -969,14 +992,42 @@ asynStatus SPiiPlusAxis::setClosedLoop(bool closedLoop)
 		if (closedLoop)
 		{
 			cmd << "ENABLE " << axisNo_;
+      status = controller->pComm_->writeReadAck(cmd);
 		}
 		else
 		{
 			cmd << "DISABLE " << axisNo_;
+      status = controller->pComm_->writeReadAck(cmd);
 		}
-		status = controller->pComm_->writeReadAck(cmd);
 	}
 	
+	return status;
+}
+
+/** Move the motor at a fixed velocity until told to stop.
+  * \param[in] minVelocity The initial velocity, often called the base velocity. Units=steps/sec.
+  * \param[in] maxVelocity The maximum velocity, often called the slew velocity. Units=steps/sec.
+  * \param[in] acceleration The acceleration value. Units=steps/sec/sec. */
+asynStatus SPiiPlusAxis::moveVelocity(double minVelocity, double maxVelocity, double acceleration)
+{
+  SPiiPlusController* controller = (SPiiPlusController*) pC_;
+	asynStatus status;
+	std::stringstream cmd;
+	
+	cmd << "VEL(" << axisNo_ << ")=" << (maxVelocity * resolution_);
+	status = controller->pComm_->writeReadAck(cmd);
+	
+	if (maxVelocity * resolution_ > 0)
+	{
+		cmd << "JOG (" << axisNo_ << "), +";
+	}
+	else if (maxVelocity * resolution_ < 0)
+	{
+		cmd << "JOG (" << axisNo_ << "), -";
+	}
+
+  status = controller->pComm_->writeReadAck(cmd);
+
 	return status;
 }
 

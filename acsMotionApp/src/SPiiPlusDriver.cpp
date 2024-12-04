@@ -158,6 +158,10 @@ SPiiPlusController::SPiiPlusController(const char* ACSPortName, const char* asyn
 			// Use the stepper factor as the resolution for stepper motors
 			pAxes_[index]->resolution_ = stepperFactor_[index];
 		}
+		else if ((pAxes_[index]->stepper_ == 0) &&  (pAxes_[index]->linear_ == 0) && (stepperFactor_[index] > 0))
+                {
+                        pAxes_[index]->resolution_ = stepperFactor_[index];
+                }
 		else
 		{
 			// Use the encoder factor as the resolution for brushless and linear motors
